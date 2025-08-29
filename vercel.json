@@ -1,0 +1,32 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "api/*.py",
+      "use": "@vercel/python"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/players/(.*)",
+      "dest": "/api/players/[player_name].py"
+    },
+    {
+      "src": "/api/fixtures",
+      "dest": "/api/fixtures.py"
+    },
+    {
+      "src": "/api/table",
+      "dest": "/api/table.py"
+    },
+    {
+      "src": "/",
+      "dest": "/api/index.py"
+    }
+  ],
+  "functions": {
+    "api/*.py": {
+      "runtime": "python3.9"
+    }
+  }
+}
