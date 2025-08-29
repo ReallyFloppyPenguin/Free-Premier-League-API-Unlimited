@@ -1,6 +1,10 @@
+from flask import Flask, jsonify
+from flask_cors import CORS
 import requests
 from bs4 import BeautifulSoup
-import json
+
+app = Flask(__name__)
+CORS(app)
 
 def get_table():
     try:
@@ -41,28 +45,17 @@ def get_table():
             "table_headers": headers,
             "teams": teams,
             "total_teams": len(teams)
-        }, 200
+        }
     except Exception as e:
         return {"error": str(e)}, 500
 
-from http.server import BaseHTTPRequestHandler
+@app.route('/')
+def table():
+    try:
+        data = get_table()
+        return jsonify(data)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
-class handler(BaseHTTPRequestHandler):
-    def do_GET(self):
-        data, status_code = get_table()
-        
-        self.send_response(status_code)
-        self.send_header('Content-type', 'application/json')
-        self.send_header('Access-Control-Allow-Origin', '*')
-        self.send_header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
-        self.send_header('Access-Control-Allow-Headers', 'Content-Type')
-        self.end_headers()
-        
-        self.wfile.write(json.dumps(data).encode())
-        
-    def do_OPTIONS(self):
-        self.send_response(200)
-        self.send_header('Access-Control-Allow-Origin', '*')
-        self.send_header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
-        self.send_header('Access-Control-Allow-Headers', 'Content-Type')
-        self.end_headers()
+# Export for Vercel
+handler = app

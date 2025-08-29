@@ -1,7 +1,10 @@
+from flask import Flask, jsonify, request
+from flask_cors import CORS
 import requests
 from bs4 import BeautifulSoup
-from urllib.parse import parse_qs
-import json
+
+app = Flask(__name__)
+CORS(app)
 
 def get_all_fixtures():
     try:
@@ -16,9 +19,9 @@ def get_all_fixtures():
             if fixture:  # Only add non-empty fixtures
                 fixtures.append(fixture)
 
-        return {"fixtures": fixtures}, 200
+        return {"fixtures": fixtures}
     except Exception as e:
-        return {"error": str(e)}, 500
+        return {"error": str(e)}
 
 def get_team_fixtures(team):
     try:
@@ -35,36 +38,23 @@ def get_team_fixtures(team):
 
         filtered_fixtures = [fixture for fixture in fixtures if team.lower() in fixture.lower()]
 
-        return {"team_fixtures": filtered_fixtures, "team": team}, 200
+        return {"team_fixtures": filtered_fixtures, "team": team}
     except Exception as e:
-        return {"error": str(e)}, 500
+        return {"error": str(e)}
 
-from http.server import BaseHTTPRequestHandler
-
-class handler(BaseHTTPRequestHandler):
-    def do_GET(self):
-        # Parse query parameters
-        query_string = self.path.split('?', 1)[1] if '?' in self.path else ''
-        query_params = parse_qs(query_string)
-        team = query_params.get('team', [None])[0]
+@app.route('/')
+def fixtures():
+    try:
+        team = request.args.get('team')
         
         if team:
-            data, status_code = get_team_fixtures(team)
+            data = get_team_fixtures(team)
         else:
-            data, status_code = get_all_fixtures()
+            data = get_all_fixtures()
             
-        self.send_response(status_code)
-        self.send_header('Content-type', 'application/json')
-        self.send_header('Access-Control-Allow-Origin', '*')
-        self.send_header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
-        self.send_header('Access-Control-Allow-Headers', 'Content-Type')
-        self.end_headers()
-        
-        self.wfile.write(json.dumps(data).encode())
-        
-    def do_OPTIONS(self):
-        self.send_response(200)
-        self.send_header('Access-Control-Allow-Origin', '*')
-        self.send_header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
-        self.send_header('Access-Control-Allow-Headers', 'Content-Type')
-        self.end_headers()
+        return jsonify(data)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+# Export for Vercel
+handler = app

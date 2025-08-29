@@ -1,8 +1,13 @@
- import requests
+ from flask import Flask, jsonify, request
+from flask_cors import CORS
+import requests
 from bs4 import BeautifulSoup
 from googlesearch import search
 from urllib.parse import unquote
-import json
+import re
+
+app = Flask(__name__)
+CORS(app)
 
 def get_player_stats(player_name):
     try:
@@ -12,7 +17,7 @@ def get_player_stats(player_name):
         if search_results:
             res = search_results[0]
         else:
-            return {"error": "No search results found for the query."}, 404
+            return {"error": "No search results found for the query."}
 
         # Adjust the URL to point to the stats page
         if "stats" in res:
@@ -84,44 +89,25 @@ def get_player_stats(player_name):
             "nationality": nationality,
             "date_of_birth": dob,
             "height": height
-        }, 200
+        }
 
     except Exception as e:
-        return {"error": str(e)}, 500
+        return {"error": str(e)}
 
-from http.server import BaseHTTPRequestHandler
-
-class handler(BaseHTTPRequestHandler):
-    def do_GET(self):
-        # Extract player name from the URL path
-        path_parts = self.path.split('/')
-        player_name = path_parts[-1] if path_parts else None
-        
-        if not player_name or player_name == '[player_name]':
-            self.send_response(400)
-            self.send_header('Content-type', 'application/json')
-            self.send_header('Access-Control-Allow-Origin', '*')
-            self.end_headers()
-            self.wfile.write(json.dumps({"error": "Player name is required"}).encode())
-            return
+@app.route('/')
+@app.route('/<path:player_name>')
+def player_stats(player_name=None):
+    try:
+        if not player_name:
+            return jsonify({"error": "Player name is required"}), 400
             
         # URL decode the player name
         player_name = unquote(player_name)
         
-        data, status_code = get_player_stats(player_name)
-        
-        self.send_response(status_code)
-        self.send_header('Content-type', 'application/json')
-        self.send_header('Access-Control-Allow-Origin', '*')
-        self.send_header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
-        self.send_header('Access-Control-Allow-Headers', 'Content-Type')
-        self.end_headers()
-        
-        self.wfile.write(json.dumps(data).encode())
-        
-    def do_OPTIONS(self):
-        self.send_response(200)
-        self.send_header('Access-Control-Allow-Origin', '*')
-        self.send_header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
-        self.send_header('Access-Control-Allow-Headers', 'Content-Type')
-        self.end_headers()
+        data = get_player_stats(player_name)
+        return jsonify(data)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+# Export for Vercel
+handler = app
