@@ -1,6 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
 from urllib.parse import parse_qs
+import json
 
 def get_all_fixtures():
     try:
@@ -38,18 +39,23 @@ def get_team_fixtures(team):
     except Exception as e:
         return {"error": str(e)}, 500
 
-def handler(request, response):
-    # Set CORS headers
-    response['Access-Control-Allow-Origin'] = '*'
-    response['Access-Control-Allow-Methods'] = 'GET, POST, OPTIONS'
-    response['Access-Control-Allow-Headers'] = 'Content-Type'
-    
+def handler(request):
+    # Handle CORS preflight
     if request.method == 'OPTIONS':
-        return ''
+        return {
+            "statusCode": 200,
+            "headers": {
+                "Access-Control-Allow-Origin": "*",
+                "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+                "Access-Control-Allow-Headers": "Content-Type"
+            },
+            "body": ""
+        }
     
     if request.method == 'GET':
         # Parse query parameters
-        query_params = parse_qs(request.url.query) if request.url.query else {}
+        query_string = getattr(request, 'query_string', '') or ''
+        query_params = parse_qs(query_string)
         team = query_params.get('team', [None])[0]
         
         if team:
@@ -57,8 +63,22 @@ def handler(request, response):
         else:
             data, status_code = get_all_fixtures()
             
-        response.status_code = status_code
-        return data
+        return {
+            "statusCode": status_code,
+            "headers": {
+                "Content-Type": "application/json",
+                "Access-Control-Allow-Origin": "*",
+                "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+                "Access-Control-Allow-Headers": "Content-Type"
+            },
+            "body": json.dumps(data)
+        }
     else:
-        response.status_code = 405
-        return {"error": "Method not allowed"}
+        return {
+            "statusCode": 405,
+            "headers": {
+                "Content-Type": "application/json",
+                "Access-Control-Allow-Origin": "*"
+            },
+            "body": json.dumps({"error": "Method not allowed"})
+        }

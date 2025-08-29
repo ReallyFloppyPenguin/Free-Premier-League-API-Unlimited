@@ -2,6 +2,7 @@
 from bs4 import BeautifulSoup
 from googlesearch import search
 from urllib.parse import unquote
+import json
 
 def get_player_stats(player_name):
     try:
@@ -88,30 +89,54 @@ def get_player_stats(player_name):
     except Exception as e:
         return {"error": str(e)}, 500
 
-def handler(request, response):
-    # Set CORS headers
-    response['Access-Control-Allow-Origin'] = '*'
-    response['Access-Control-Allow-Methods'] = 'GET, POST, OPTIONS'
-    response['Access-Control-Allow-Headers'] = 'Content-Type'
-    
+def handler(request):
+    # Handle CORS preflight
     if request.method == 'OPTIONS':
-        return ''
+        return {
+            "statusCode": 200,
+            "headers": {
+                "Access-Control-Allow-Origin": "*",
+                "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+                "Access-Control-Allow-Headers": "Content-Type"
+            },
+            "body": ""
+        }
     
     if request.method == 'GET':
         # Extract player name from the URL path
-        path = request.url.path
+        path = getattr(request, 'path', '') or getattr(request, 'url', {}).get('pathname', '')
         player_name = path.split('/')[-1] if path else None
         
-        if not player_name:
-            response.status_code = 400
-            return {"error": "Player name is required"}
+        if not player_name or player_name == '[player_name]':
+            return {
+                "statusCode": 400,
+                "headers": {
+                    "Content-Type": "application/json",
+                    "Access-Control-Allow-Origin": "*"
+                },
+                "body": json.dumps({"error": "Player name is required"})
+            }
             
         # URL decode the player name
         player_name = unquote(player_name)
         
         data, status_code = get_player_stats(player_name)
-        response.status_code = status_code
-        return data
+        return {
+            "statusCode": status_code,
+            "headers": {
+                "Content-Type": "application/json",
+                "Access-Control-Allow-Origin": "*",
+                "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+                "Access-Control-Allow-Headers": "Content-Type"
+            },
+            "body": json.dumps(data)
+        }
     else:
-        response.status_code = 405
-        return {"error": "Method not allowed"}
+        return {
+            "statusCode": 405,
+            "headers": {
+                "Content-Type": "application/json",
+                "Access-Control-Allow-Origin": "*"
+            },
+            "body": json.dumps({"error": "Method not allowed"})
+        }
