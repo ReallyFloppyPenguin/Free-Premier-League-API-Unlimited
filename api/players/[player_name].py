@@ -89,54 +89,39 @@ def get_player_stats(player_name):
     except Exception as e:
         return {"error": str(e)}, 500
 
-def handler(request):
-    # Handle CORS preflight
-    if request.method == 'OPTIONS':
-        return {
-            "statusCode": 200,
-            "headers": {
-                "Access-Control-Allow-Origin": "*",
-                "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-                "Access-Control-Allow-Headers": "Content-Type"
-            },
-            "body": ""
-        }
-    
-    if request.method == 'GET':
+from http.server import BaseHTTPRequestHandler
+
+class handler(BaseHTTPRequestHandler):
+    def do_GET(self):
         # Extract player name from the URL path
-        path = getattr(request, 'path', '') or getattr(request, 'url', {}).get('pathname', '')
-        player_name = path.split('/')[-1] if path else None
+        path_parts = self.path.split('/')
+        player_name = path_parts[-1] if path_parts else None
         
         if not player_name or player_name == '[player_name]':
-            return {
-                "statusCode": 400,
-                "headers": {
-                    "Content-Type": "application/json",
-                    "Access-Control-Allow-Origin": "*"
-                },
-                "body": json.dumps({"error": "Player name is required"})
-            }
+            self.send_response(400)
+            self.send_header('Content-type', 'application/json')
+            self.send_header('Access-Control-Allow-Origin', '*')
+            self.end_headers()
+            self.wfile.write(json.dumps({"error": "Player name is required"}).encode())
+            return
             
         # URL decode the player name
         player_name = unquote(player_name)
         
         data, status_code = get_player_stats(player_name)
-        return {
-            "statusCode": status_code,
-            "headers": {
-                "Content-Type": "application/json",
-                "Access-Control-Allow-Origin": "*",
-                "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-                "Access-Control-Allow-Headers": "Content-Type"
-            },
-            "body": json.dumps(data)
-        }
-    else:
-        return {
-            "statusCode": 405,
-            "headers": {
-                "Content-Type": "application/json",
-                "Access-Control-Allow-Origin": "*"
-            },
-            "body": json.dumps({"error": "Method not allowed"})
-        }
+        
+        self.send_response(status_code)
+        self.send_header('Content-type', 'application/json')
+        self.send_header('Access-Control-Allow-Origin', '*')
+        self.send_header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
+        self.send_header('Access-Control-Allow-Headers', 'Content-Type')
+        self.end_headers()
+        
+        self.wfile.write(json.dumps(data).encode())
+        
+    def do_OPTIONS(self):
+        self.send_response(200)
+        self.send_header('Access-Control-Allow-Origin', '*')
+        self.send_header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
+        self.send_header('Access-Control-Allow-Headers', 'Content-Type')
+        self.end_headers()

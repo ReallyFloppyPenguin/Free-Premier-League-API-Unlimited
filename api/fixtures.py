@@ -39,22 +39,12 @@ def get_team_fixtures(team):
     except Exception as e:
         return {"error": str(e)}, 500
 
-def handler(request):
-    # Handle CORS preflight
-    if request.method == 'OPTIONS':
-        return {
-            "statusCode": 200,
-            "headers": {
-                "Access-Control-Allow-Origin": "*",
-                "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-                "Access-Control-Allow-Headers": "Content-Type"
-            },
-            "body": ""
-        }
-    
-    if request.method == 'GET':
+from http.server import BaseHTTPRequestHandler
+
+class handler(BaseHTTPRequestHandler):
+    def do_GET(self):
         # Parse query parameters
-        query_string = getattr(request, 'query_string', '') or ''
+        query_string = self.path.split('?', 1)[1] if '?' in self.path else ''
         query_params = parse_qs(query_string)
         team = query_params.get('team', [None])[0]
         
@@ -63,22 +53,18 @@ def handler(request):
         else:
             data, status_code = get_all_fixtures()
             
-        return {
-            "statusCode": status_code,
-            "headers": {
-                "Content-Type": "application/json",
-                "Access-Control-Allow-Origin": "*",
-                "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-                "Access-Control-Allow-Headers": "Content-Type"
-            },
-            "body": json.dumps(data)
-        }
-    else:
-        return {
-            "statusCode": 405,
-            "headers": {
-                "Content-Type": "application/json",
-                "Access-Control-Allow-Origin": "*"
-            },
-            "body": json.dumps({"error": "Method not allowed"})
-        }
+        self.send_response(status_code)
+        self.send_header('Content-type', 'application/json')
+        self.send_header('Access-Control-Allow-Origin', '*')
+        self.send_header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
+        self.send_header('Access-Control-Allow-Headers', 'Content-Type')
+        self.end_headers()
+        
+        self.wfile.write(json.dumps(data).encode())
+        
+    def do_OPTIONS(self):
+        self.send_response(200)
+        self.send_header('Access-Control-Allow-Origin', '*')
+        self.send_header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
+        self.send_header('Access-Control-Allow-Headers', 'Content-Type')
+        self.end_headers()
