@@ -41,13 +41,31 @@
 <pre><code>[ { "Team A vs Team B DD/MM/YYYY HH:MM", "Team A vs Team C DD/MM/YYYY HH:MM", "Team A vs Team D DD/MM/YYYY HH:MM"} ] </code></pre>
 
 <h2>Setup Details</h2>
-Follow the following instructions to run the application and start using the api in your local pc
+
+### Local Development
+Follow the following instructions to run the application locally:
 <li>Clone the repository</li>
 <li>Open the terminal, navigate to the folder where your clone of this repository is located and type:
   
   `$ pip install -r requirements.txt` </li>
 
 <li> Type $ python main.py in the terminal and the script will run for as long as you let it. </li>
+
+### Vercel Deployment (Recommended)
+This API is now optimized for Vercel serverless deployment:
+
+<li>Install Vercel CLI: `npm install -g vercel`</li>
+<li>Clone the repository and navigate to the project folder</li>
+<li>Run `vercel` in the terminal and follow the prompts</li>
+<li>Your API will be deployed to a Vercel URL (e.g., https://your-project.vercel.app)</li>
+
+### API Endpoints (Vercel)
+Once deployed on Vercel, use these endpoints:
+- `GET /api/players/{player_name}` - Get player statistics
+- `GET /api/fixtures` - Get all fixtures  
+- `GET /api/fixtures?team={team_name}` - Get fixtures for specific team
+- `GET /api/table` - Get Premier League table
+- `GET /` - API documentation and welcome message
 
 
 
