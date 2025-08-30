@@ -1,9 +1,12 @@
 <h1>Premier League API 2.0</h1>
 	<p>This is an unofficial Premier League API client for pulling player stats, fixtures, tables, and results data from the Premier League. The API is built using Flask, and the data is scraped from the Premier League website.</p>
 
->We have hosted it onto vercel [here](https://premier-league-api-eta.vercel.app/)
+> [!NOTE]
+> We have hosted it onto vercel [here](https://premier-league-api-eta.vercel.app/)
 
-<p>Thank to https://github.com/tarun7r for the original code</p>
+
+> [!CAUTION]
+> /players/(*.) IS BROKEN
 
 <h2>API Endpoints</h2>
 
@@ -70,30 +73,14 @@ Once deployed on Vercel, use these endpoints:
 - `GET /api/table` - Get Premier League table
 - `GET /` - API documentation and welcome message
 
-
-
-<H2>Individual PLayer PL Stats</H2> 
-<ul>
-  <li>Example: Stats of Cristiano Ronaldo | One can use the common name of the Players as well to retrive the data</li>
-  <br> <img src="assets/player_stats.png"><br>
+ Rebased and updated to ensure compatibility with the latest dependencies.</li>
 </ul>
- <H2>Premier League Table</H2> 
-<ul>
-  <li>Current Premier League Table</li>
-  <br> <img src="assets/table.png"><br>
- </ul>
- <H2>Premier League Fixtures </H2> 
-<ul>
-  <li>Fixtures of the Next three weeks </li>
-  <br> <img src="assets/fixtures.png"> <br>
- </ul>
-<H2>Update 🚀 </H2>
-The API has been enhanced with new features and improvements:
-<ul>
-  <li>✨ Optimized the code for better performance.</li>
-  <li>🔄 Rebased and updated to ensure compatibility with the latest dependencies.</li>
-</ul>
-You can also search player stats using the player's reference image ( Face Recognition ) as well - <a href=https://github.com/tarun7r/Premier-League-Face-Recognition>Repo</a> 📸
 
-<H2>Disclaimer</H2>
-This project is created solely for learning and educational purposes. It is not intended for production-level use or commercial applications
+
+# Colaborating:
+### If you can fix this i will be happy...
+- [ ] Fix /players/(*.)
+
+
+## Thanks to
+@tarun7r for the original code
