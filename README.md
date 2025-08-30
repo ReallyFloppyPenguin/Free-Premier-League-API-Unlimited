@@ -1,7 +1,7 @@
 <h1>Premier League API 2.0</h1>
 	<p>This is an unofficial Premier League API client for pulling player stats, fixtures, tables, and results data from the Premier League. The API is built using Flask, and the data is scraped from the Premier League website.</p>
 
->We have hosted it onto vercel here (
+>We have hosted it onto vercel [here](https://premier-league-api-eta.vercel.app/)
 
 <p>Thank to https://github.com/tarun7r for the original code</p>
 
